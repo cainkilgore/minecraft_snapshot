@@ -1,5 +1,6 @@
 <?php
     $server_path = "server/server.jar";
+    $world_path = "server/world";
 
     $version_manifest = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
     $version_manifest_download = file_get_contents($version_manifest);
@@ -20,9 +21,12 @@
 
         if(@sha1_file($server_path) != $version_info_json->downloads->server->sha1) {
             echo "SHA mismatch, downloading newer version.\n";
+            exec("screen -S Server -X quit");
+            exec("rm -rf $world_path");
             $download_jar = file_put_contents($server_path, fopen($server_jar, "r"));
             if($download_jar) {
                 echo "New server jar for $version_id downloaded to $server_path. SHA: " . sha1_file($server_path) . "\n\n";
+                exec("cd server && screen -dmS Server java -Xmx1024M -Xms1024M -jar server.jar");
                 return true;
             }
         } else {
